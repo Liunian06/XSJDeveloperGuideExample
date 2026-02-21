@@ -4,42 +4,42 @@
 用户正在编写一个 AI-Native 产品的开发教程。该 AI 产品在行业内一般被称为"小手机"，核心产品逻辑是在浏览器中通过 HTML、JavaScript 和 CSS 开发 PWA 应用，实现一个虚拟操作系统的完整体验。系统内包含微信、QQ、抖音等常见软件形态，但所有应用均不连接真实平台环境，而是基于用户自定义人设构建高拟真的 AI Roleplay 闭环，以提升长期陪伴体验与沉浸感。
 
 ## 一、项目初始化与架构
-- [ ] 创建 SPA 基础目录结构（`index.html`、`styles/`、`scripts/`、`assets/`、`manifest.json`、`sw.js`）
-- [ ] 搭建 PWA 基础能力（`manifest.json`、Service Worker 注册、离线缓存策略）
-- [ ] 配置移动端视口与 iOS 风格基础变量（圆角、阴影、间距、字体层级）
+- [x] 创建 SPA 基础目录结构（`index.html`、`styles/`、`scripts/`、`assets/`、`manifest.json`、`sw.js`）
+- [x] 搭建 PWA 基础能力（`manifest.json`、Service Worker 注册、离线缓存策略）
+- [x] 配置移动端视口与 iOS 风格基础变量（圆角、阴影、间距、字体层级）
 
 ## 二、页面与 UI（iOS 风格 + 微信绿色主题）
-- [ ] 基于 `color.txt` 建立统一主题变量（浅色/深色两套 token），并拆分到 `styles/theme.css`
-- [ ] 启用系统主题自动跟随：使用 `@media (prefers-color-scheme: dark)` 自动切换深浅色
-- [ ] 在 `html` 上声明 `color-scheme: light dark`，确保表单/滚动条等原生控件风格同步
-- [ ] 实现启动界面（品牌 Logo、应用名、启动动画与加载状态）
-- [ ] 实现 iOS 风格锁屏页面（时间日期、解锁输入区、壁纸背景、模糊效果）
-- [ ] 实现仿 iOS 主屏幕页面（天气/时间小组件、应用网格、底部 Dock）
-- [ ] 实现聊天超级 App 页面（整合聊天、群聊、自动总结、朋友圈）
-- [ ] 实现联系人 App 页面
+- [x] 基于 `color.txt` 建立统一主题变量（浅色/深色两套 token），并拆分到 `styles/theme.css`
+- [x] 启用系统主题自动跟随：使用 `@media (prefers-color-scheme: dark)` 自动切换深浅色
+- [x] 在 `html` 上声明 `color-scheme: light dark`，确保表单/滚动条等原生控件风格同步
+- [x] 实现启动界面（品牌 Logo、应用名、启动动画与加载状态）
+- [x] 实现 iOS 风格锁屏页面（时间日期、解锁输入区、壁纸背景、模糊效果）
+- [x] 实现仿 iOS 主屏幕页面（天气/时间小组件、应用网格、底部 Dock）
+- [x] 实现聊天超级 App 页面（整合聊天、群聊、自动总结、朋友圈）
+- [x] 实现联系人 App 页面
 - [ ] 实现记忆 App 页面
 - [ ] 实现日记 App 页面
 - [ ] 实现论坛 App 页面
 - [ ] 实现世界书 App 页面
 - [ ] 实现预设 App 页面
-- [ ] 实现设置 App 页面（数据库导入导出、API 预设入口）
+- [x] 实现设置 App 页面（数据库导入导出、API 预设入口）
 - [ ] 实现表情包 App 页面
-- [ ] 统一视觉规范：以 `#07C160` 为品牌主色，搭配 `#10AEFF`（信息高亮）、`#FA9D3B`（提醒）、`#FA5151`（错误/危险），并保持圆角卡片、气泡阴影与留白
-- [ ] 完成移动端适配（常见手机宽度 320-430px，分辨率 2K-2.5K）
-  - [ ] 设置视口元标签：`<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">`
-  - [ ] 使用 CSS 重置与标准化：移除默认边距、设置 `box-sizing: border-box`、禁用长按高亮
-  - [ ] 采用响应式单位：主布局使用 `rem` + `vw/vh`，字体使用 `clamp()` 实现自适应缩放
-  - [ ] 适配安全区域：使用 `env(safe-area-inset-*)` 处理刘海屏/灵动岛
-  - [ ] 处理状态栏高度：iOS 约 47px，Android 约 24-40px，动态计算顶部留白
-  - [ ] 处理底部手势区：预留 34px 底部安全区域，避免内容被手势条遮挡
-  - [ ] 适配 2K 分辨率（1440×3200，~520ppi）：使用高分辨率图片（@2x/@3x），SVG 优先
-  - [ ] 适配 2.5K 分辨率（1440×3600+，~600ppi）：确保图标/文字在超高 DPI 下清晰
-  - [ ] 设置 CSS 像素密度：`image-rendering: -webkit-optimize-contrast` 提升锐度
-  - [ ] 媒体查询断点：按宽度分档（320/360/375/390/414/430px）微调布局
-  - [ ] 横屏适配：检测 `orientation`，调整布局或提示用户竖屏使用
-  - [ ] 触摸优化：按钮最小点击区域 44×44px，禁用双击缩放，优化滚动惯性
-  - [ ] 性能优化：图片懒加载、CSS 含 will-change、减少重绘重排
-  - [ ] 测试覆盖：在 iOS（Safari）、Android（Chrome）主流机型验证显示与交互
+- [x] 统一视觉规范：以 `#07C160` 为品牌主色，搭配 `#10AEFF`（信息高亮）、`#FA9D3B`（提醒）、`#FA5151`（错误/危险），并保持圆角卡片、气泡阴影与留白
+- [x] 完成移动端适配（常见手机宽度 320-430px，分辨率 2K-2.5K）
+  - [x] 设置视口元标签：`<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">`
+  - [x] 使用 CSS 重置与标准化：移除默认边距、设置 `box-sizing: border-box`、禁用长按高亮
+  - [x] 采用响应式单位：主布局使用 `rem` + `vw/vh`，字体使用 `clamp()` 实现自适应缩放
+  - [x] 适配安全区域：使用 `env(safe-area-inset-*)` 处理刘海屏/灵动岛
+  - [x] 处理状态栏高度：iOS 约 47px，Android 约 24-40px，动态计算顶部留白
+  - [x] 处理底部手势区：预留 34px 底部安全区域，避免内容被手势条遮挡
+  - [x] 适配 2K 分辨率（1440×3200，~520ppi）：使用高分辨率图片（@2x/@3x），SVG 优先
+  - [x] 适配 2.5K 分辨率（1440×3600+，~600ppi）：确保图标/文字在超高 DPI 下清晰
+  - [x] 设置 CSS 像素密度：`image-rendering: -webkit-optimize-contrast` 提升锐度
+  - [x] 媒体查询断点：按宽度分档（320/360/375/390/414/430px）微调布局
+  - [x] 横屏适配：检测 `orientation`，调整布局或提示用户竖屏使用
+  - [x] 触摸优化：按钮最小点击区域 44×44px，禁用双击缩放，优化滚动惯性
+  - [x] 性能优化：图片懒加载、CSS 含 will-change、减少重绘重排
+  - [x] 测试覆盖：在 iOS（Safari）、Android（Chrome）主流机型验证显示与交互
 
 ## 三、核心功能开发（按系统能力与应用拆分）
 
