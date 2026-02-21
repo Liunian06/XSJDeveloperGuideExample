@@ -1,0 +1,222 @@
+/* ===== 全局布局 ===== */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 页面容器 */
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* 状态栏通用 */
+.status-time {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.status-icons {
+  font-size: var(--font-xs);
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+/* 模态框 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.modal-desc {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 密码点 */
+.passcode-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+}
+
+.passcode-dots .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--text-tertiary);
+  background: transparent;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.passcode-dots .dot.filled {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.passcode-error {
+  font-size: var(--font-sm);
+  color: var(--color-danger);
+  min-height: 20px;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* 数字键盘 */
+.passcode-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.passcode-keypad .key {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: var(--font-xl);
+  font-weight: var(--font-weight-regular);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background: var(--fill-tertiary);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.passcode-keypad .key:active {
+  background: var(--fill-primary);
+  transform: scale(0.95);
+}
+
+.passcode-keypad .key-empty {
+  visibility: hidden;
+}
+
+.passcode-keypad .key-delete {
+  font-size: var(--font-lg);
+  background: transparent;
+}
+
+/* 应用头部 */
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  padding-top: calc(var(--safe-top) + var(--spacing-sm));
+  background: var(--bg-blur);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--separator-color);
+  min-height: 44px;
+  z-index: 10;
+}
+
+.app-back-btn {
+  font-size: var(--font-md);
+  color: var(--color-primary);
+  padding: var(--spacing-sm);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.app-title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.app-header-right {
+  min-width: 44px;
+  text-align: right;
+}
+
+.app-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--safe-bottom);
+}
+
+/* 动画：震动反馈 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+/* 横屏提示 */
+@media (orientation: landscape) {
+  .landscape-warning {
+    display: flex !important;
+  }
+}
+
+.landscape-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.landscape-warning::after {
+  content: '请竖屏使用';
+  font-size: var(--font-lg);
+  color: var(--text-tertiary);
+}

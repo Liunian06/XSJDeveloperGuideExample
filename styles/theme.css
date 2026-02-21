@@ -1,150 +1,154 @@
-/**
- * 小手机主题变量
- * 包含浅色/深色两套主题 token
- * 品牌主色：#07C160（微信绿）
- */
-
+/* ===== 主题变量 ===== */
+/* 品牌色系 */
 :root {
-  /* ========== 品牌色 ========== */
-  --brand-primary: #07C160;
-  --brand-primary-dark: #06AD56;
-  --brand-primary-light: #08D46A;
-  
-  /* ========== 功能色 ========== */
+  /* 品牌主色 */
+  --color-primary: #07C160;
+  --color-primary-light: #38D97A;
+  --color-primary-dark: #06AD56;
+  /* 功能色 */
   --color-info: #10AEFF;
   --color-warning: #FA9D3B;
   --color-danger: #FA5151;
   --color-success: #07C160;
-  
-  /* ========== 浅色主题 ========== */
-  --bg-primary: #F5F5F5;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #EDEDED;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --text-placeholder: #B2B2B2;
-  --text-inverse: #FFFFFF;
-  
-  --border-color: #E5E5E5;
-  --border-light: #F0F0F0;
-  
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
-  
-  --overlay-bg: rgba(0, 0, 0, 0.4);
-  --mask-bg: rgba(0, 0, 0, 0.6);
-  
-  /* ========== 深色主题 ========== */
-  --dark-bg-primary: #000000;
-  --dark-bg-secondary: #1C1C1E;
-  --dark-bg-tertiary: #2C2C2E;
-  --dark-bg-glass: rgba(28, 28, 30, 0.85);
-  
-  --dark-text-primary: #FFFFFF;
-  --dark-text-secondary: #98989D;
-  --dark-text-tertiary: #636366;
-  --dark-text-placeholder: #48484A;
-  --dark-text-inverse: #000000;
-  
-  --dark-border-color: #38383A;
-  --dark-border-light: #2C2C2E;
-  
-  --dark-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --dark-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --dark-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --dark-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
-  
-  --dark-overlay-bg: rgba(0, 0, 0, 0.6);
-  --dark-mask-bg: rgba(0, 0, 0, 0.8);
-  
-  /* ========== 间距 ========== */
+
+  /* iOS 风格基础变量 */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
   --spacing-lg: 16px;
-  --spacing-xl: 20px;
-  --spacing-2xl: 24px;
-  --spacing-3xl: 32px;
-  
-  /* ========== 圆角 ========== */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  --radius-full: 9999px;
-  
-  /* ========== 字体大小 ========== */
-  --font-xs: clamp(10px, 2.5vw, 11px);
-  --font-sm: clamp(12px, 3vw, 13px);
-  --font-md: clamp(14px, 3.5vw, 15px);
-  --font-lg: clamp(16px, 4vw, 17px);
-  --font-xl: clamp(18px, 4.5vw, 20px);
-  --font-2xl: clamp(22px, 5vw, 24px);
-  --font-3xl: clamp(28px, 6vw, 32px);
-  --font-4xl: clamp(36px, 8vw, 44px);
-  
-  /* ========== 字重 ========== */
-  --font-weight-normal: 400;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.16);
+
+  --font-xs: clamp(10px, 2.6vw, 11px);
+  --font-sm: clamp(12px, 3.2vw, 13px);
+  --font-base: clamp(14px, 3.7vw, 15px);
+  --font-md: clamp(16px, 4.2vw, 17px);
+  --font-lg: clamp(18px, 4.8vw, 20px);
+  --font-xl: clamp(22px, 5.8vw, 26px);
+  --font-2xl: clamp(32px, 8.5vw, 40px);
+  --font-3xl: clamp(56px, 15vw, 72px);
+
+  --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* ========== 行高 ========== */
-  --line-height-tight: 1.2;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-  
-  /* ========== 安全区域 ========== */
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
-  
-  /* ========== 状态栏高度 ========== */
-  --status-bar-height: calc(47px + var(--safe-area-top));
-  --bottom-gesture-height: calc(34px + var(--safe-area-bottom));
-  
-  /* ========== 动画 ========== */
+
+  /* 安全区域 */
+  --safe-top: env(safe-area-inset-top, 47px);
+  --safe-bottom: env(safe-area-inset-bottom, 34px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --status-bar-height: 47px;
+
+  /* 动画 */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.4s ease;
-  --spring-transition: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ========== 深色主题自动跟随 ========== */
+/* ===== 浅色模式 ===== */
+:root, [data-theme="light"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --bg-tertiary: #EDEDED;
+  --bg-elevated: #FFFFFF;
+  --bg-grouped: #F2F2F7;
+  --bg-blur: rgba(255,255,255,0.72);
+
+  --text-primary: #000000;
+  --text-secondary: #3C3C43;
+  --text-tertiary: #8E8E93;
+  --text-quaternary: #C7C7CC;
+  --text-on-primary: #FFFFFF;
+
+  --border-color: rgba(0,0,0,0.08);
+  --separator-color: rgba(60,60,67,0.12);
+  --fill-primary: rgba(120,120,128,0.2);
+  --fill-secondary: rgba(120,120,128,0.16);
+  --fill-tertiary: rgba(120,120,128,0.12);
+
+  --bubble-self: #07C160;
+  --bubble-self-text: #FFFFFF;
+  --bubble-other: #F0F0F0;
+  --bubble-other-text: #000000;
+
+  --card-bg: #FFFFFF;
+  --card-shadow: var(--shadow-sm);
+  --overlay-bg: rgba(0,0,0,0.4);
+}
+
+/* ===== 深色模式 ===== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: var(--dark-bg-primary);
-    --bg-secondary: var(--dark-bg-secondary);
-    --bg-tertiary: var(--dark-bg-tertiary);
-    --bg-glass: var(--dark-bg-glass);
-    
-    --text-primary: var(--dark-text-primary);
-    --text-secondary: var(--dark-text-secondary);
-    --text-tertiary: var(--dark-text-tertiary);
-    --text-placeholder: var(--dark-text-placeholder);
-    --text-inverse: var(--dark-text-inverse);
-    
-    --border-color: var(--dark-border-color);
-    --border-light: var(--dark-border-light);
-    
-    --shadow-sm: var(--dark-shadow-sm);
-    --shadow-md: var(--dark-shadow-md);
-    --shadow-lg: var(--dark-shadow-lg);
-    --shadow-xl: var(--dark-shadow-xl);
-    
-    --overlay-bg: var(--dark-overlay-bg);
-    --mask-bg: var(--dark-mask-bg);
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --bg-elevated: #1C1C1E;
+    --bg-grouped: #1C1C1E;
+    --bg-blur: rgba(30,30,30,0.72);
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #EBEBF5;
+    --text-tertiary: #8E8E93;
+    --text-quaternary: #636366;
+    --text-on-primary: #FFFFFF;
+
+    --border-color: rgba(255,255,255,0.08);
+    --separator-color: rgba(84,84,88,0.36);
+    --fill-primary: rgba(120,120,128,0.36);
+    --fill-secondary: rgba(120,120,128,0.32);
+    --fill-tertiary: rgba(120,120,128,0.24);
+
+    --bubble-self: #07C160;
+    --bubble-self-text: #FFFFFF;
+    --bubble-other: #2C2C2E;
+    --bubble-other-text: #FFFFFF;
+
+    --card-bg: #1C1C1E;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --overlay-bg: rgba(0,0,0,0.6);
   }
 }
 
-/* ========== 声明 color-scheme ========== */
-html {
-  color-scheme: light dark;
+/* 手动深色模式覆盖 */
+[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #1C1C1E;
+  --bg-tertiary: #2C2C2E;
+  --bg-elevated: #1C1C1E;
+  --bg-grouped: #1C1C1E;
+  --bg-blur: rgba(30,30,30,0.72);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #EBEBF5;
+  --text-tertiary: #8E8E93;
+  --text-quaternary: #636366;
+  --text-on-primary: #FFFFFF;
+
+  --border-color: rgba(255,255,255,0.08);
+  --separator-color: rgba(84,84,88,0.36);
+  --fill-primary: rgba(120,120,128,0.36);
+  --fill-secondary: rgba(120,120,128,0.32);
+  --fill-tertiary: rgba(120,120,128,0.24);
+
+  --bubble-self: #07C160;
+  --bubble-self-text: #FFFFFF;
+  --bubble-other: #2C2C2E;
+  --bubble-other-text: #FFFFFF;
+
+  --card-bg: #1C1C1E;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --overlay-bg: rgba(0,0,0,0.6);
 }

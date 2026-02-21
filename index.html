@@ -1,247 +1,138 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#07C160">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="小手机">
-    <meta name="description" content="小手机 - AI Native 虚拟操作系统">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
-    <title>小手机 - 教程机</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-    <link rel="stylesheet" href="styles/theme.css">
-    <link rel="stylesheet" href="styles/main.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07C160">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="教程机">
+  <meta name="description" content="AI-Native 小手机 PWA 应用">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="styles/reset.css">
+  <link rel="stylesheet" href="styles/theme.css">
+  <link rel="stylesheet" href="styles/global.css">
+  <link rel="stylesheet" href="styles/splash.css">
+  <link rel="stylesheet" href="styles/lockscreen.css">
+  <link rel="stylesheet" href="styles/homescreen.css">
+  <title>教程机</title>
 </head>
 <body>
-    <div id="app">
-        <!-- 启动界面 -->
-        <div id="splash-screen" class="splash-screen">
-            <div class="splash-content">
-                <div class="splash-logo">
-                    <svg viewBox="0 0 100 100" class="logo-icon">
-                        <rect x="20" y="10" width="60" height="80" rx="12" fill="#07C160"/>
-                        <circle cx="50" cy="75" r="4" fill="#fff"/>
-                        <rect x="25" y="15" width="50" height="55" rx="4" fill="#1a1a1a"/>
-                    </svg>
-                </div>
-                <h1 class="splash-title">小手机</h1>
-                <p class="splash-subtitle">教程机</p>
-                <div class="splash-loader">
-                    <div class="loader-dot"></div>
-                    <div class="loader-dot"></div>
-                    <div class="loader-dot"></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 锁屏页面 -->
-        <div id="lock-screen" class="lock-screen hidden">
-            <div class="lock-wallpaper"></div>
-            <div class="lock-content">
-                <div class="lock-time">
-                    <div id="lock-clock-time" class="lock-clock-time">12:00</div>
-                    <div id="lock-clock-date" class="lock-clock-date">2 月 21 日 星期五</div>
-                </div>
-                <div class="lock-unlock-section">
-                    <div id="lock-password-display" class="lock-password-display">
-                        <span class="password-dot"></span>
-                        <span class="password-dot"></span>
-                        <span class="password-dot"></span>
-                        <span class="password-dot"></span>
-                        <span class="password-dot"></span>
-                        <span class="password-dot"></span>
-                    </div>
-                    <p class="lock-hint">输入密码解锁</p>
-                    <div class="lock-keypad">
-                        <button class="keypad-btn" data-key="1">1</button>
-                        <button class="keypad-btn" data-key="2">2</button>
-                        <button class="keypad-btn" data-key="3">3</button>
-                        <button class="keypad-btn" data-key="4">4</button>
-                        <button class="keypad-btn" data-key="5">5</button>
-                        <button class="keypad-btn" data-key="6">6</button>
-                        <button class="keypad-btn" data-key="7">7</button>
-                        <button class="keypad-btn" data-key="8">8</button>
-                        <button class="keypad-btn" data-key="9">9</button>
-                        <button class="keypad-btn keypad-empty"></button>
-                        <button class="keypad-btn" data-key="0">0</button>
-                        <button class="keypad-btn keypad-back" data-key="back">⌫</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 主屏幕页面 -->
-        <div id="home-screen" class="home-screen hidden">
-            <div class="home-status-bar">
-                <div class="status-time" id="status-time">12:00</div>
-                <div class="status-icons">
-                    <svg class="status-signal" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                    </svg>
-                    <svg class="status-wifi" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12.01 21.49L23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"/>
-                    </svg>
-                    <svg class="status-battery" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/>
-                    </svg>
-                </div>
-            </div>
-            
-            <div class="home-widgets">
-                <div class="widget widget-weather">
-                    <div class="widget-time" id="widget-time">12:00</div>
-                    <div class="widget-date" id="widget-date">2 月 21 日</div>
-                    <div class="widget-weather-info">
-                        <svg class="weather-icon" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
-                        </svg>
-                        <span class="weather-temp">25°</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="home-apps-grid">
-                <div class="app-icon" data-app="chat">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #07C160, #06AD56);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">微信</span>
-                </div>
-                <div class="app-icon" data-app="contacts">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #07C160, #06AD56);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">联系人</span>
-                </div>
-                <div class="app-icon" data-app="memory">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #10AEFF, #0D9AE6);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">记忆</span>
-                </div>
-                <div class="app-icon" data-app="journal">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #FA9D3B, #E88D2E);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">日记</span>
-                </div>
-                <div class="app-icon" data-app="forum">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #FA5151, #E64545);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">论坛</span>
-                </div>
-                <div class="app-icon" data-app="worldbook">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #9C27B0, #8E24AA);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">世界书</span>
-                </div>
-                <div class="app-icon" data-app="preset">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #00BCD4, #00ACC1);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">预设</span>
-                </div>
-                <div class="app-icon" data-app="settings">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #607D8B, #546E7A);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">设置</span>
-                </div>
-                <div class="app-icon" data-app="stickers">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                        </svg>
-                    </div>
-                    <span class="app-name">表情包</span>
-                </div>
-            </div>
-
-            <div class="home-dock">
-                <div class="app-icon" data-app="chat">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #07C160, #06AD56);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="app-icon" data-app="contacts">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #07C160, #06AD56);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="app-icon" data-app="memory">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #10AEFF, #0D9AE6);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="app-icon" data-app="settings">
-                    <div class="app-icon-bg" style="background: linear-gradient(135deg, #607D8B, #546E7A);">
-                        <svg viewBox="0 0 24 24" class="app-icon-svg">
-                            <path fill="#fff" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 应用容器页面 -->
-        <div id="app-container" class="app-container hidden">
-            <div class="app-header">
-                <button class="app-back-btn" id="app-back-btn">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                    </svg>
-                </button>
-                <h1 class="app-title" id="app-title">应用</h1>
-            </div>
-            <div class="app-content" id="app-content">
-                <!-- 应用内容动态加载 -->
-            </div>
-        </div>
+  <!-- 启动画面 -->
+  <div id="splash-screen" class="screen active">
+    <div class="splash-content">
+      <div class="splash-logo">📱</div>
+      <div class="splash-name">教程机</div>
+      <div class="splash-loader"><div class="loader-bar"></div></div>
+      <div class="splash-hint">AI-Native 小手机</div>
     </div>
+  </div>
 
-    <script src="scripts/db.js"></script>
-    <script src="scripts/app.js"></script>
-    <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful:', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed:', err);
-                    });
-            });
-        }
-    </script>
+  <!-- 锁屏页面 -->
+  <div id="lock-screen" class="screen">
+    <div class="lockscreen-wallpaper"></div>
+    <div class="lockscreen-overlay">
+      <div class="lockscreen-status-bar">
+        <span class="status-time" id="lock-status-time"></span>
+        <span class="status-icons">📶 🔋</span>
+      </div>
+      <div class="lockscreen-clock">
+        <div class="lock-time" id="lock-time">00:00</div>
+        <div class="lock-date" id="lock-date">1月1日 星期一</div>
+      </div>
+      <div class="lockscreen-passcode">
+        <div class="passcode-title" id="passcode-title">输入密码</div>
+        <div class="passcode-dots" id="passcode-dots">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+        <div class="passcode-error" id="passcode-error"></div>
+        <div class="passcode-keypad" id="passcode-keypad">
+          <button class="key" data-key="1">1</button>
+          <button class="key" data-key="2">2</button>
+          <button class="key" data-key="3">3</button>
+          <button class="key" data-key="4">4</button>
+          <button class="key" data-key="5">5</button>
+          <button class="key" data-key="6">6</button>
+          <button class="key" data-key="7">7</button>
+          <button class="key" data-key="8">8</button>
+          <button class="key" data-key="9">9</button>
+          <button class="key key-empty"></button>
+          <button class="key" data-key="0">0</button>
+          <button class="key key-delete" data-key="delete">⌫</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主屏幕 -->
+  <div id="home-screen" class="screen">
+    <div class="home-status-bar">
+      <span class="status-time" id="home-status-time"></span>
+      <span class="status-icons">📶 📡 🔋</span>
+    </div>
+    <div class="home-widgets">
+      <div class="widget widget-weather">
+        <div class="widget-weather-icon">☀️</div>
+        <div class="widget-weather-info">
+          <div class="weather-temp">23°</div>
+          <div class="weather-desc">晴 · 北京</div>
+        </div>
+      </div>
+      <div class="widget widget-clock">
+        <div class="widget-clock-time" id="home-clock-time">00:00</div>
+        <div class="widget-clock-date" id="home-clock-date">1月1日 星期一</div>
+      </div>
+    </div>
+    <div class="home-app-grid" id="app-grid"></div>
+    <div class="home-dock" id="app-dock"></div>
+  </div>
+
+  <!-- 应用容器 -->
+  <div id="app-container" class="screen">
+    <div class="app-header" id="app-header">
+      <button class="app-back-btn" id="app-back-btn">‹ 返回</button>
+      <span class="app-title" id="app-title"></span>
+      <span class="app-header-right" id="app-header-right"></span>
+    </div>
+    <div class="app-body" id="app-body"></div>
+  </div>
+
+  <!-- 密码设置弹窗 -->
+  <div id="setup-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-title" id="setup-title">设置密码</div>
+      <div class="modal-desc" id="setup-desc">请设置 6 位数字密码</div>
+      <div class="passcode-dots" id="setup-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="passcode-error" id="setup-error"></div>
+      <div class="passcode-keypad" id="setup-keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key key-empty"></button>
+        <button class="key" data-key="0">0</button>
+        <button class="key key-delete" data-key="delete">⌫</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/db.js"></script>
+  <script src="scripts/router.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/splash.js"></script>
+  <script src="scripts/lockscreen.js"></script>
+  <script src="scripts/homescreen.js"></script>
+  <script src="scripts/app.js"></script>
 </body>
 </html>

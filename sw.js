@@ -1,99 +1,62 @@
-// Service Worker for 小手机 PWA
-const CACHE_NAME = 'xiaoshouji-cache-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/styles/theme.css',
-  '/styles/main.css',
-  '/scripts/db.js',
-  '/scripts/app.js'
+const CACHE_NAME = 'xsj-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.json',
+  './styles/reset.css',
+  './styles/theme.css',
+  './styles/global.css',
+  './styles/splash.css',
+  './styles/lockscreen.css',
+  './styles/homescreen.css',
+  './scripts/db.js',
+  './scripts/router.js',
+  './scripts/utils.js',
+  './scripts/splash.js',
+  './scripts/lockscreen.js',
+  './scripts/homescreen.js',
+  './scripts/app.js'
 ];
 
-// 安装事件 - 缓存静态资源
+// 安装：预缓存核心资源
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[Service Worker] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log('[Service Worker] Installation complete, skipping waiting');
-        return self.skipWaiting();
-      })
-      .catch((err) => {
-        console.log('[Service Worker] Cache failed:', err);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
-// 激活事件 - 清理旧缓存
+// 激活：清理旧缓存
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('[Service Worker] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('[Service Worker] Activation complete, claiming clients');
-        return self.clients.claim();
-      })
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
   );
+  self.clients.claim();
 });
 
-// 请求拦截 - 网络优先，失败回退到缓存
+// 拦截请求：缓存优先，网络回退
 self.addEventListener('fetch', (event) => {
-  // 跳过非 GET 请求
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // 跳过跨域请求
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // 网络请求成功，克隆响应并缓存
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((response) => {
+        // 仅缓存同源的成功响应
+        if (response.ok && event.request.url.startsWith(self.location.origin)) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
-      })
-      .catch(() => {
-        // 网络失败，从缓存获取
-        return caches.match(event.request)
-          .then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            // 如果缓存也没有，返回离线页面
-            if (event.request.mode === 'navigate') {
-              return caches.match('/index.html');
-            }
-          });
-      })
+      });
+    }).catch(() => {
+      // 离线兜底：返回主页
+      if (event.request.mode === 'navigate') {
+        return caches.match('./index.html');
+      }
+    })
   );
-});
-
-// 消息处理
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });

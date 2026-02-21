@@ -1,347 +1,203 @@
 /**
- * 小手机 IndexedDB 数据库模块
- * 封装数据库操作，提供统一的 CRUD 接口
+ * IndexedDB 存储模块
+ * 封装建库、事务、CRUD、容错
  */
+const DB = (() => {
+  const DB_NAME = 'XSJ_DB';
+  const DB_VERSION = 1;
+  let db = null;
 
-class Database {
-  constructor() {
-    this.dbName = 'XiaoShouJiDB';
-    this.dbVersion = 1;
-    this.db = null;
-    this.stores = [
-      'settings',
-      'contacts',
-      'conversations',
-      'messages',
-      'groups',
-      'moments',
-      'memories',
-      'journals',
-      'forums',
-      'worldbook',
-      'presets',
-      'stickers'
-    ];
-  }
+  // 对象仓库定义
+  const STORES = {
+    settings:      { keyPath: 'key' },
+    contacts:      { keyPath: 'id', indexes: ['nickname', 'updated_at', 'is_deleted'] },
+    conversations: { keyPath: 'id', indexes: ['contact_id', 'updated_at', 'is_deleted', 'is_pinned'] },
+    messages:      { keyPath: 'id', indexes: ['conversation_id', 'created_at', 'is_deleted'] },
+    groups:        { keyPath: 'id', indexes: ['name', 'updated_at', 'is_deleted'] },
+    moments:       { keyPath: 'id', indexes: ['author_id', 'created_at', 'is_deleted'] },
+    memories:      { keyPath: 'id', indexes: ['tags', 'importance', 'created_at', 'is_deleted'] },
+    journals:      { keyPath: 'id', indexes: ['date', 'mood', 'created_at', 'is_deleted'] },
+    forums:        { keyPath: 'id', indexes: ['tags', 'created_at', 'likes', 'is_deleted'] },
+    worldbook:     { keyPath: 'id', indexes: ['type', 'name', 'updated_at', 'is_deleted'] },
+    presets:       { keyPath: 'id', indexes: ['group', 'updated_at', 'is_deleted'] },
+    stickers:      { keyPath: 'id', indexes: ['category', 'is_favorite', 'use_count'] }
+  };
 
-  /**
-   * 初始化数据库
-   */
-  async init() {
+  /** 打开数据库 */
+  function open() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.dbVersion);
+      if (db) { resolve(db); return; }
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-      request.onerror = () => {
-        console.error('[Database] Open failed:', request.error);
-        reject(request.error);
-      };
-
-      request.onsuccess = () => {
-        this.db = request.result;
-        console.log('[Database] Database opened successfully');
-        resolve(this.db);
-      };
-
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        console.log('[Database] Creating object stores...');
-
-        // 创建所有对象仓库
-        this.stores.forEach(storeName => {
-          if (!db.objectStoreNames.contains(storeName)) {
-            const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: false });
-            
-            // 为常用字段创建索引
-            store.createIndex('created_at', 'created_at', { unique: false });
-            store.createIndex('updated_at', 'updated_at', { unique: false });
-            
-            // 为特定仓库创建额外索引
-            if (storeName === 'contacts') {
-              store.createIndex('name', 'name', { unique: false });
-              store.createIndex('tags', 'tags', { unique: false, multiEntry: true });
-            } else if (storeName === 'conversations') {
-              store.createIndex('last_message_at', 'last_message_at', { unique: false });
-              store.createIndex('type', 'type', { unique: false });
-            } else if (storeName === 'messages') {
-              store.createIndex('conversation_id', 'conversation_id', { unique: false });
-              store.createIndex('status', 'status', { unique: false });
-            } else if (storeName === 'memories') {
-              store.createIndex('tags', 'tags', { unique: false, multiEntry: true });
-              store.createIndex('priority', 'priority', { unique: false });
-            } else if (storeName === 'journals') {
-              store.createIndex('date', 'date', { unique: false });
-              store.createIndex('mood', 'mood', { unique: false });
+      request.onupgradeneeded = (e) => {
+        const database = e.target.result;
+        for (const [name, config] of Object.entries(STORES)) {
+          if (!database.objectStoreNames.contains(name)) {
+            const store = database.createObjectStore(name, { keyPath: config.keyPath });
+            if (config.indexes) {
+              config.indexes.forEach(idx => {
+                store.createIndex(idx, idx, { unique: false });
+              });
             }
           }
-        });
+        }
+      };
 
-        console.log('[Database] Object stores created');
+      request.onsuccess = (e) => {
+        db = e.target.result;
+        db.onerror = (ev) => console.error('DB error:', ev.target.error);
+        resolve(db);
+      };
+
+      request.onerror = (e) => {
+        console.error('Failed to open DB:', e.target.error);
+        reject(e.target.error);
       };
     });
   }
 
-  /**
-   * 通用 CRUD 操作
-   */
+  /** 获取事务中的 store */
+  async function getStore(storeName, mode = 'readonly') {
+    const database = await open();
+    const tx = database.transaction(storeName, mode);
+    return tx.objectStore(storeName);
+  }
 
-  // 添加记录
-  async add(storeName, data) {
+  /** 通用 CRUD */
+  async function get(storeName, key) {
+    const store = await getStore(storeName);
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      const request = store.add(data);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 获取记录
-  async get(storeName, id) {
+  async function getAll(storeName) {
+    const store = await getStore(storeName);
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-      const request = store.get(id);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 获取所有记录
-  async getAll(storeName) {
+  async function put(storeName, data) {
+    const store = await getStore(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-      const request = store.getAll();
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const req = store.put(data);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 更新记录
-  async put(storeName, data) {
+  async function add(storeName, data) {
+    const store = await getStore(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      const request = store.put(data);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const req = store.add(data);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 删除记录
-  async delete(storeName, id) {
+  async function remove(storeName, key) {
+    const store = await getStore(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      const request = store.delete(id);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      const req = store.delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 查询（使用索引）
-  async query(storeName, indexName, value) {
+  async function clear(storeName) {
+    const store = await getStore(storeName, 'readwrite');
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-      const index = store.index(indexName);
-      const request = index.getAll(value);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
     });
   }
 
-  // 清空仓库
-  async clear(storeName) {
+  /** 按索引查询 */
+  async function getByIndex(storeName, indexName, value) {
+    const store = await getStore(storeName);
+    const index = store.index(indexName);
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readwrite');
-      const store = transaction.objectStore(storeName);
-      const request = store.clear();
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      const req = index.getAll(value);
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
     });
   }
 
-  /**
-   * 设置相关操作
-   */
-  async getSetting(key) {
-    const setting = await this.get('settings', key);
-    return setting ? setting.value : null;
+  /** Settings 快捷方法 */
+  async function getSetting(key) {
+    const result = await get('settings', key);
+    return result ? result.value : null;
   }
 
-  async setSetting(key, value) {
-    await this.put('settings', { id: key, value, updated_at: new Date().toISOString() });
+  async function setSetting(key, value) {
+    return put('settings', { key, value });
   }
 
-  /**
-   * 数据库导入导出
-   */
-  async exportData() {
-    const exportData = {
-      version: this.dbVersion,
-      exportTime: new Date().toISOString(),
-      data: {}
+  /** 导出全部数据 */
+  async function exportAll() {
+    const data = {};
+    for (const name of Object.keys(STORES)) {
+      data[name] = await getAll(name);
+    }
+    data._meta = {
+      version: DB_VERSION,
+      exported_at: new Date().toISOString(),
+      app: 'XSJ_教程机'
     };
-
-    for (const storeName of this.stores) {
-      exportData.data[storeName] = await this.getAll(storeName);
-    }
-
-    return exportData;
+    return data;
   }
 
-  async importData(data) {
-    if (!data || !data.data) {
-      throw new Error('Invalid import data format');
+  /** 导入数据 */
+  async function importAll(data) {
+    if (!data || !data._meta) {
+      throw new Error('无效的备份数据格式');
+    }
+    const database = await open();
+    const storeNames = Object.keys(STORES).filter(n => data[n]);
+    const tx = database.transaction(storeNames, 'readwrite');
+
+    for (const name of storeNames) {
+      const store = tx.objectStore(name);
+      store.clear();
+      for (const item of data[name]) {
+        store.put(item);
+      }
     }
 
-    for (const [storeName, records] of Object.entries(data.data)) {
-      if (this.stores.includes(storeName) && Array.isArray(records)) {
-        for (const record of records) {
-          await this.put(storeName, record);
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  /** 存储配额检查 */
+  async function checkQuota() {
+    if (navigator.storage && navigator.storage.estimate) {
+      const { usage, quota } = await navigator.storage.estimate();
+      const percent = (usage / quota * 100).toFixed(1);
+      if (percent >= 70) {
+        // 尝试申请持久化存储
+        if (navigator.storage.persist) {
+          const persisted = await navigator.storage.persist();
+          if (!persisted && percent >= 90) {
+            console.warn('存储空间接近上限，请清理旧数据');
+          }
         }
       }
-    }
-  }
-
-  /**
-   * 初始化默认数据
-   */
-  async initDefaultData() {
-    // 检查是否已有数据
-    const contacts = await this.getAll('contacts');
-    if (contacts.length > 0) {
-      return; // 已有数据，跳过初始化
-    }
-
-    console.log('[Database] Initializing default data...');
-
-    // 默认联系人
-    const defaultContacts = [
-      {
-        id: 'contact_001',
-        name: '小助手',
-        avatar_blob: null,
-        avatar_mime: null,
-        avatar_updated_at: null,
-        persona: '你是一个贴心的 AI 助手，总是能给出温暖的建议。',
-        user_persona: '用户是你的朋友，正在学习如何使用小手机。',
-        tags: ['助手', 'AI'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_deleted: false
-      },
-      {
-        id: 'contact_002',
-        name: '树洞',
-        avatar_blob: null,
-        avatar_mime: null,
-        avatar_updated_at: null,
-        persona: '你是一个安静的倾听者，不会评判，只会理解和陪伴。',
-        user_persona: '用户需要倾诉，希望你能安静地听他说完。',
-        tags: ['倾听', '陪伴'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_deleted: false
-      }
-    ];
-
-    for (const contact of defaultContacts) {
-      await this.add('contacts', contact);
-    }
-
-    // 默认会话
-    const defaultConversations = [
-      {
-        id: 'conv_001',
-        type: 'private',
-        contact_id: 'contact_001',
-        last_message_at: new Date().toISOString(),
-        unread_count: 0,
-        is_pinned: false,
-        is_muted: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_deleted: false
-      }
-    ];
-
-    for (const conv of defaultConversations) {
-      await this.add('conversations', conv);
-    }
-
-    // 默认消息
-    const defaultMessages = [
-      {
-        id: 'msg_001',
-        conversation_id: 'conv_001',
-        sender_id: 'contact_001',
-        content: '你好！我是小助手，很高兴认识你～',
-        type: 'text',
-        status: 'sent',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_deleted: false
-      }
-    ];
-
-    for (const msg of defaultMessages) {
-      await this.add('messages', msg);
-    }
-
-    console.log('[Database] Default data initialized');
-  }
-
-  /**
-   * 存储持久化申请
-   */
-  async requestPersistence() {
-    if (navigator.storage && navigator.storage.persist) {
-      const isPersisted = await navigator.storage.persist();
-      console.log('[Database] Persistence granted:', isPersisted);
-      return isPersisted;
-    }
-    return false;
-  }
-
-  /**
-   * 检查存储配额
-   */
-  async checkQuota() {
-    if (navigator.storage && navigator.storage.estimate) {
-      const estimate = await navigator.storage.estimate();
-      const usage = estimate.usage || 0;
-      const quota = estimate.quota || 0;
-      const percent = quota > 0 ? (usage / quota) * 100 : 0;
-      
-      console.log(`[Database] Storage: ${this.formatBytes(usage)} / ${this.formatBytes(quota)} (${percent.toFixed(1)}%)`);
-      
-      return {
-        usage,
-        quota,
-        percent,
-        warning: percent >= 70
-      };
+      return { usage, quota, percent: parseFloat(percent) };
     }
     return null;
   }
 
-  formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-}
-
-// 导出单例
-const db = new Database();
+  return {
+    open, get, getAll, put, add, remove, clear,
+    getByIndex, getSetting, setSetting,
+    exportAll, importAll, checkQuota
+  };
+})();

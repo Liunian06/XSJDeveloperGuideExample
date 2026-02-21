@@ -1,0 +1,103 @@
+/* ===== 锁屏页面 ===== */
+#lock-screen {
+  background: #000;
+  position: relative;
+}
+
+.lockscreen-wallpaper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 30%, #0d2137 60%, #0a1628 100%);
+  z-index: 0;
+}
+
+.lockscreen-overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-lg);
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+.lockscreen-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-sm);
+  color: rgba(255,255,255,0.8);
+  font-size: var(--font-sm);
+}
+
+.lockscreen-clock {
+  text-align: center;
+  margin-top: var(--spacing-2xl);
+  color: #fff;
+}
+
+.lock-time {
+  font-size: var(--font-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.lock-date {
+  font-size: var(--font-md);
+  color: rgba(255,255,255,0.7);
+  margin-top: var(--spacing-sm);
+}
+
+.lockscreen-passcode {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lockscreen-passcode .passcode-title {
+  font-size: var(--font-base);
+  color: rgba(255,255,255,0.8);
+  margin-bottom: var(--spacing-md);
+}
+
+.lockscreen-passcode .passcode-dots .dot {
+  border-color: rgba(255,255,255,0.5);
+}
+
+.lockscreen-passcode .passcode-dots .dot.filled {
+  background: #fff;
+  border-color: #fff;
+}
+
+.lockscreen-passcode .passcode-error {
+  color: var(--color-danger);
+}
+
+.lockscreen-passcode .passcode-keypad .key {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.lockscreen-passcode .passcode-keypad .key:active {
+  background: rgba(255,255,255,0.25);
+}
+
+.lockscreen-passcode .passcode-keypad .key-delete {
+  background: transparent;
+}
+
+.lockscreen-hint {
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-size: var(--font-sm);
+  padding-bottom: var(--spacing-lg);
+}

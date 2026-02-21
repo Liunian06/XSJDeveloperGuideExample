@@ -1,0 +1,60 @@
+/* ===== 启动画面 ===== */
+#splash-screen {
+  background: var(--bg-primary);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.splash-logo {
+  font-size: 80px;
+  animation: splashPulse 1.5s ease-in-out infinite;
+}
+
+.splash-name {
+  font-size: var(--font-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: 2px;
+}
+
+.splash-loader {
+  width: 120px;
+  height: 3px;
+  background: var(--fill-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--spacing-md);
+}
+
+.loader-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: splashLoad 2s ease-in-out forwards;
+}
+
+.splash-hint {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-sm);
+}
+
+@keyframes splashPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes splashLoad {
+  0% { width: 0%; }
+  60% { width: 70%; }
+  100% { width: 100%; }
+}
