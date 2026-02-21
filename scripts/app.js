@@ -789,9 +789,36 @@ class App {
   async loadMemoryApp(container) {
     const memories = await db.getAll('memories');
     
+    // 获取所有唯一标签用于筛选
+    const allTags = new Set();
+    memories.forEach(m => {
+      if (m.tags && Array.isArray(m.tags)) {
+        m.tags.forEach(tag => allTags.add(tag));
+      }
+    });
+    
     let html = `
       <div class="memory-app">
-        <div class="memory-list">
+        <div class="memory-header-bar">
+          <div class="memory-search-box">
+            <svg class="memory-search-icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="memory-search-input" class="memory-search-input" placeholder="搜索记忆...">
+          </div>
+          <button class="memory-add-btn" id="memory-add-btn">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="memory-filter-tags" id="memory-filter-tags">
+          <span class="memory-filter-tag active" data-tag="all">全部</span>
+          ${Array.from(allTags).map(tag => `<span class="memory-filter-tag" data-tag="${this.escapeHtml(tag)}">${this.escapeHtml(tag)}</span>`).join('')}
+        </div>
+        
+        <div class="memory-list" id="memory-list">
     `;
     
     if (memories.length === 0) {
@@ -806,16 +833,30 @@ class App {
       
       memories.forEach(memory => {
         const priorityStars = '★'.repeat(memory.priority || 1) + '☆'.repeat(5 - (memory.priority || 1));
+        const tagsHtml = memory.tags ? memory.tags.map(tag => `<span class="memory-tag">${this.escapeHtml(tag)}</span>`).join('') : '';
+        
         html += `
-          <div class="memory-item card">
+          <div class="memory-item card" data-memory-id="${memory.id}" data-tags="${memory.tags ? memory.tags.join(',') : ''}">
             <div class="memory-header">
               <span class="memory-title">${this.escapeHtml(memory.title || '无标题')}</span>
-              <span class="memory-priority">${priorityStars}</span>
+              <span class="memory-priority" title="重要度：${memory.priority || 1}">${priorityStars}</span>
             </div>
             <div class="memory-content">${this.escapeHtml(memory.content || '')}</div>
             <div class="memory-footer">
-              ${memory.tags ? memory.tags.map(tag => `<span class="memory-tag">${this.escapeHtml(tag)}</span>`).join('') : ''}
+              <div class="memory-tags">${tagsHtml}</div>
               <span class="memory-date">${new Date(memory.created_at).toLocaleDateString('zh-CN')}</span>
+            </div>
+            <div class="memory-actions">
+              <button class="memory-action-btn memory-edit-btn" data-id="${memory.id}">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              </button>
+              <button class="memory-action-btn memory-delete-btn" data-id="${memory.id}">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </button>
             </div>
           </div>
         `;
@@ -828,6 +869,316 @@ class App {
     `;
     
     container.innerHTML = html;
+    
+    // 绑定事件
+    this.bindMemoryEvents(container);
+  }
+
+  /**
+   * 绑定记忆 App 事件
+   */
+  bindMemoryEvents(container) {
+    // 添加按钮
+    const addBtn = container.querySelector('#memory-add-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        this.showMemoryModal();
+      });
+    }
+    
+    // 搜索输入
+    const searchInput = container.querySelector('#memory-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.filterMemoriesBySearch(e.target.value);
+      });
+    }
+    
+    // 标签筛选
+    const filterTags = container.querySelectorAll('.memory-filter-tag');
+    filterTags.forEach(tag => {
+      tag.addEventListener('click', (e) => {
+        container.querySelectorAll('.memory-filter-tag').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        this.filterMemoriesByTag(e.target.dataset.tag);
+      });
+    });
+    
+    // 编辑按钮
+    const editBtns = container.querySelectorAll('.memory-edit-btn');
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const memoryId = e.currentTarget.dataset.id;
+        this.showMemoryModal(memoryId);
+      });
+    });
+    
+    // 删除按钮
+    const deleteBtns = container.querySelectorAll('.memory-delete-btn');
+    deleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const memoryId = e.currentTarget.dataset.id;
+        this.deleteMemory(memoryId);
+      });
+    });
+    
+    // 点击记忆项查看详情
+    const memoryItems = container.querySelectorAll('.memory-item');
+    memoryItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.memory-action-btn')) {
+          const memoryId = item.dataset.memoryId;
+          this.viewMemoryDetail(memoryId);
+        }
+      });
+    });
+  }
+
+  /**
+   * 显示记忆编辑/新增模态框
+   */
+  async showMemoryModal(memoryId = null) {
+    const isEdit = !!memoryId;
+    let memory = null;
+    
+    if (isEdit) {
+      memory = await db.get('memories', memoryId);
+    }
+    
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal memory-modal">
+          <div class="modal-header">
+            <div class="modal-title">${isEdit ? '编辑记忆' : '新增记忆'}</div>
+          </div>
+          <div class="modal-body">
+            <div class="memory-form-group">
+              <label class="memory-form-label">标题</label>
+              <input type="text" id="memory-title-input" class="input" value="${this.escapeHtml(memory?.title || '')}" placeholder="输入记忆标题">
+            </div>
+            <div class="memory-form-group">
+              <label class="memory-form-label">内容</label>
+              <textarea id="memory-content-input" class="input memory-content-input" rows="5" placeholder="输入记忆内容">${this.escapeHtml(memory?.content || '')}</textarea>
+            </div>
+            <div class="memory-form-group">
+              <label class="memory-form-label">标签（用逗号分隔）</label>
+              <input type="text" id="memory-tags-input" class="input" value="${memory?.tags ? memory.tags.join(', ') : ''}" placeholder="例如：工作，学习，重要">
+            </div>
+            <div class="memory-form-group">
+              <label class="memory-form-label">重要度</label>
+              <div class="memory-priority-selector" id="memory-priority-selector">
+                ${[1,2,3,4,5].map(p => `
+                  <span class="priority-star ${p <= (memory?.priority || 1) ? 'active' : ''}" data-priority="${p}">★</span>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            ${isEdit ? `
+              <div class="modal-btn danger" id="memory-delete-confirm-btn">删除</div>
+            ` : ''}
+            <div class="modal-btn" id="memory-cancel-btn">取消</div>
+            <div class="modal-btn" id="memory-save-btn">保存</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // 星星选择重要度
+      let selectedPriority = memory?.priority || 1;
+      const prioritySelector = modal.querySelector('#memory-priority-selector');
+      const stars = prioritySelector.querySelectorAll('.priority-star');
+      
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          selectedPriority = parseInt(star.dataset.priority);
+          stars.forEach((s, idx) => {
+            s.classList.toggle('active', idx < selectedPriority);
+          });
+        });
+      });
+      
+      // 取消按钮
+      modal.querySelector('#memory-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      // 保存按钮
+      modal.querySelector('#memory-save-btn').addEventListener('click', async () => {
+        const title = modal.querySelector('#memory-title-input').value.trim();
+        const content = modal.querySelector('#memory-content-input').value.trim();
+        const tagsInput = modal.querySelector('#memory-tags-input').value.trim();
+        const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (!content) {
+          this.showToast('记忆内容不能为空');
+          return;
+        }
+        
+        const memoryData = {
+          id: memory?.id || `memory_${Date.now()}`,
+          title,
+          content,
+          tags,
+          priority: selectedPriority,
+          created_at: memory?.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_deleted: false
+        };
+        
+        await db.put('memories', memoryData);
+        document.body.removeChild(modal);
+        this.showToast(isEdit ? '记忆已更新' : '记忆已添加');
+        
+        // 重新加载记忆列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadMemoryApp(appContent);
+        }
+        resolve(true);
+      });
+      
+      // 删除按钮（编辑模式下）
+      if (isEdit) {
+        modal.querySelector('#memory-delete-confirm-btn').addEventListener('click', async () => {
+          await this.deleteMemory(memoryId);
+          document.body.removeChild(modal);
+          resolve(true);
+        });
+      }
+    });
+  }
+
+  /**
+   * 删除记忆
+   */
+  async deleteMemory(memoryId) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">确认删除</div>
+          </div>
+          <div class="modal-body">
+            <p style="text-align: center;">确定要删除这条记忆吗？</p>
+          </div>
+          <div class="modal-footer">
+            <div class="modal-btn" id="memory-delete-cancel-btn">取消</div>
+            <div class="modal-btn danger" id="memory-delete-ok-btn">删除</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      modal.querySelector('#memory-delete-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      modal.querySelector('#memory-delete-ok-btn').addEventListener('click', async () => {
+        await db.delete('memories', memoryId);
+        document.body.removeChild(modal);
+        this.showToast('记忆已删除');
+        
+        // 重新加载记忆列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadMemoryApp(appContent);
+        }
+        resolve(true);
+      });
+    });
+  }
+
+  /**
+   * 查看记忆详情
+   */
+  async viewMemoryDetail(memoryId) {
+    const memory = await db.get('memories', memoryId);
+    if (!memory) return;
+    
+    const container = document.getElementById('app-content');
+    if (!container) return;
+    
+    const priorityStars = '★'.repeat(memory.priority || 1) + '☆'.repeat(5 - (memory.priority || 1));
+    
+    container.innerHTML = `
+      <div class="memory-detail">
+        <div class="memory-detail-header">
+          <h2 class="memory-detail-title">${this.escapeHtml(memory.title || '无标题')}</h2>
+          <span class="memory-detail-priority">${priorityStars}</span>
+        </div>
+        <div class="memory-detail-content">${this.escapeHtml(memory.content || '')}</div>
+        <div class="memory-detail-footer">
+          <div class="memory-detail-tags">
+            ${memory.tags ? memory.tags.map(tag => `<span class="memory-tag">${this.escapeHtml(tag)}</span>`).join('') : ''}
+          </div>
+          <span class="memory-detail-date">创建于：${new Date(memory.created_at).toLocaleString('zh-CN')}</span>
+          ${memory.updated_at !== memory.created_at ? `<span class="memory-detail-date">更新于：${new Date(memory.updated_at).toLocaleString('zh-CN')}</span>` : ''}
+        </div>
+        <div class="memory-detail-actions">
+          <button class="btn btn-secondary" id="memory-detail-edit-btn">编辑</button>
+          <button class="btn btn-primary" id="memory-detail-back-btn">返回</button>
+        </div>
+      </div>
+    `;
+    
+    // 绑定事件
+    container.querySelector('#memory-detail-back-btn').addEventListener('click', () => {
+      const appContent = document.getElementById('app-content');
+      if (appContent) {
+        this.loadMemoryApp(appContent);
+      }
+    });
+    
+    container.querySelector('#memory-detail-edit-btn').addEventListener('click', () => {
+      this.showMemoryModal(memoryId);
+    });
+  }
+
+  /**
+   * 按搜索过滤记忆
+   */
+  filterMemoriesBySearch(query) {
+    const list = document.getElementById('memory-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.memory-item');
+    const lowerQuery = query.toLowerCase();
+    
+    items.forEach(item => {
+      const title = item.querySelector('.memory-title')?.textContent.toLowerCase() || '';
+      const content = item.querySelector('.memory-content')?.textContent.toLowerCase() || '';
+      const tags = item.dataset.tags || '';
+      
+      const match = title.includes(lowerQuery) || content.includes(lowerQuery) || tags.toLowerCase().includes(lowerQuery);
+      item.style.display = match ? '' : 'none';
+    });
+  }
+
+  /**
+   * 按标签过滤记忆
+   */
+  filterMemoriesByTag(tag) {
+    const list = document.getElementById('memory-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.memory-item');
+    
+    items.forEach(item => {
+      if (tag === 'all') {
+        item.style.display = '';
+      } else {
+        const itemTags = item.dataset.tags || '';
+        const match = itemTags.split(',').includes(tag);
+        item.style.display = match ? '' : 'none';
+      }
+    });
   }
 
   /**
@@ -836,34 +1187,91 @@ class App {
   async loadJournalApp(container) {
     const journals = await db.getAll('journals');
     
+    // 按月份分组
+    const journalsByMonth = {};
+    journals.forEach(j => {
+      const monthKey = new Date(j.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+      if (!journalsByMonth[monthKey]) {
+        journalsByMonth[monthKey] = [];
+      }
+      journalsByMonth[monthKey].push(j);
+    });
+    
     let html = `
       <div class="journal-app">
-        <div class="journal-list">
+        <div class="journal-header-bar">
+          <div class="journal-search-box">
+            <svg class="journal-search-icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="journal-search-input" class="journal-search-input" placeholder="搜索日记...">
+          </div>
+          <button class="journal-add-btn" id="journal-add-btn">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="journal-filter-moods" id="journal-filter-moods">
+          <span class="journal-filter-mood active" data-mood="all">全部</span>
+          <span class="journal-filter-mood" data-mood="😊">😊</span>
+          <span class="journal-filter-mood" data-mood="😐">😐</span>
+          <span class="journal-filter-mood" data-mood="😔">😔</span>
+          <span class="journal-filter-mood" data-mood="😠">😠</span>
+          <span class="journal-filter-mood" data-mood="😴">😴</span>
+        </div>
+        
+        <div class="journal-list" id="journal-list">
     `;
     
     if (journals.length === 0) {
       html += `
         <div class="empty-state">
           <div class="empty-state-title">暂无日记</div>
-          <div class="empty-state-desc">开始记录你的生活吧</div>
+          <div class="empty-state-desc">点击右上角 + 开始记录生活</div>
         </div>
       `;
     } else {
-      journals.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // 按月份排序
+      const sortedMonths = Object.keys(journalsByMonth).sort((a, b) => {
+        return new Date(journalsByMonth[b][0].date) - new Date(journalsByMonth[a][0].date);
+      });
       
-      journals.forEach(journal => {
-        html += `
-          <div class="journal-item card">
-            <div class="journal-header">
-              <span class="journal-date">${new Date(journal.date).toLocaleDateString('zh-CN')}</span>
-              <span class="journal-mood">${journal.mood || '😊'}</span>
+      sortedMonths.forEach(month => {
+        html += `<div class="journal-month-group"><div class="journal-month-title">${month}</div>`;
+        
+        const monthJournals = journalsByMonth[month].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        monthJournals.forEach(journal => {
+          html += `
+            <div class="journal-item card" data-journal-id="${journal.id}" data-mood="${journal.mood || ''}" data-content="${this.escapeHtml(journal.content || '')}">
+              <div class="journal-header">
+                <span class="journal-date">${new Date(journal.date).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
+                <span class="journal-mood">${journal.mood || '😊'}</span>
+              </div>
+              <div class="journal-preview">${this.escapeHtml(journal.content?.substring(0, 80) || '')}${journal.content?.length > 80 ? '...' : ''}</div>
+              <div class="journal-footer">
+                <span class="journal-words">${journal.content?.length || 0} 字</span>
+                ${journal.tags && journal.tags.length > 0 ? `<span class="journal-tags-preview">${journal.tags.slice(0, 3).map(t => `#${this.escapeHtml(t)}`).join(' ')}</span>` : ''}
+              </div>
+              <div class="journal-actions">
+                <button class="journal-action-btn journal-edit-btn" data-id="${journal.id}">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                </button>
+                <button class="journal-action-btn journal-delete-btn" data-id="${journal.id}">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div class="journal-preview">${this.escapeHtml(journal.content?.substring(0, 100) || '')}${journal.content?.length > 100 ? '...' : ''}</div>
-            <div class="journal-footer">
-              <span class="journal-words">${journal.content?.length || 0} 字</span>
-            </div>
-          </div>
-        `;
+          `;
+        });
+        
+        html += `</div>`;
       });
     }
     
@@ -873,6 +1281,323 @@ class App {
     `;
     
     container.innerHTML = html;
+    
+    // 绑定事件
+    this.bindJournalEvents(container);
+  }
+
+  /**
+   * 绑定日记 App 事件
+   */
+  bindJournalEvents(container) {
+    // 添加按钮
+    const addBtn = container.querySelector('#journal-add-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        this.showJournalModal();
+      });
+    }
+    
+    // 搜索输入
+    const searchInput = container.querySelector('#journal-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.filterJournalsBySearch(e.target.value);
+      });
+    }
+    
+    // 情绪筛选
+    const filterMoods = container.querySelectorAll('.journal-filter-mood');
+    filterMoods.forEach(mood => {
+      mood.addEventListener('click', (e) => {
+        container.querySelectorAll('.journal-filter-mood').forEach(m => m.classList.remove('active'));
+        e.target.classList.add('active');
+        this.filterJournalsByMood(e.target.dataset.mood);
+      });
+    });
+    
+    // 编辑按钮
+    const editBtns = container.querySelectorAll('.journal-edit-btn');
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const journalId = e.currentTarget.dataset.id;
+        this.showJournalModal(journalId);
+      });
+    });
+    
+    // 删除按钮
+    const deleteBtns = container.querySelectorAll('.journal-delete-btn');
+    deleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const journalId = e.currentTarget.dataset.id;
+        this.deleteJournal(journalId);
+      });
+    });
+    
+    // 点击日记项查看详情
+    const journalItems = container.querySelectorAll('.journal-item');
+    journalItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.journal-action-btn')) {
+          const journalId = item.dataset.journalId;
+          this.viewJournalDetail(journalId);
+        }
+      });
+    });
+  }
+
+  /**
+   * 显示日记编辑/新增模态框
+   */
+  async showJournalModal(journalId = null) {
+    const isEdit = !!journalId;
+    let journal = null;
+    
+    if (isEdit) {
+      journal = await db.get('journals', journalId);
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay journal-modal-overlay';
+      modal.innerHTML = `
+        <div class="modal journal-modal">
+          <div class="modal-header">
+            <div class="modal-title">${isEdit ? '编辑日记' : '写日记'}</div>
+          </div>
+          <div class="modal-body">
+            <div class="journal-form-group">
+              <label class="journal-form-label">日期</label>
+              <input type="date" id="journal-date-input" class="input" value="${journal?.date || today}">
+            </div>
+            <div class="journal-form-group">
+              <label class="journal-form-label">今天的心情</label>
+              <div class="journal-mood-selector" id="journal-mood-selector">
+                ${['😊','😐','😔','😠','😴','🤒','😍','🤔'].map(mood => `
+                  <span class="mood-option ${journal?.mood === mood ? 'active' : ''}" data-mood="${mood}">${mood}</span>
+                `).join('')}
+              </div>
+            </div>
+            <div class="journal-form-group">
+              <label class="journal-form-label">内容</label>
+              <textarea id="journal-content-input" class="input journal-content-input" rows="8" placeholder="今天发生了什么...">${this.escapeHtml(journal?.content || '')}</textarea>
+            </div>
+            <div class="journal-form-group">
+              <label class="journal-form-label">标签（用逗号分隔）</label>
+              <input type="text" id="journal-tags-input" class="input" value="${journal?.tags ? journal.tags.join(', ') : ''}" placeholder="例如：工作，生活，感悟">
+            </div>
+          </div>
+          <div class="modal-footer">
+            ${isEdit ? `
+              <div class="modal-btn danger" id="journal-delete-confirm-btn">删除</div>
+            ` : ''}
+            <div class="modal-btn" id="journal-cancel-btn">取消</div>
+            <div class="modal-btn" id="journal-save-btn">保存</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // 心情选择
+      let selectedMood = journal?.mood || '😊';
+      const moodSelector = modal.querySelector('#journal-mood-selector');
+      const moodOptions = moodSelector.querySelectorAll('.mood-option');
+      
+      moodOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          selectedMood = option.dataset.mood;
+          moodOptions.forEach(o => o.classList.remove('active'));
+          option.classList.add('active');
+        });
+      });
+      
+      // 取消按钮
+      modal.querySelector('#journal-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      // 保存按钮
+      modal.querySelector('#journal-save-btn').addEventListener('click', async () => {
+        const date = modal.querySelector('#journal-date-input').value;
+        const content = modal.querySelector('#journal-content-input').value.trim();
+        const tagsInput = modal.querySelector('#journal-tags-input').value.trim();
+        const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (!content) {
+          this.showToast('日记内容不能为空');
+          return;
+        }
+        
+        if (!date) {
+          this.showToast('请选择日期');
+          return;
+        }
+        
+        const journalData = {
+          id: journal?.id || `journal_${Date.now()}`,
+          date,
+          content,
+          mood: selectedMood,
+          tags,
+          created_at: journal?.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_deleted: false
+        };
+        
+        await db.put('journals', journalData);
+        document.body.removeChild(modal);
+        this.showToast(isEdit ? '日记已更新' : '日记已保存');
+        
+        // 重新加载日记列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadJournalApp(appContent);
+        }
+        resolve(true);
+      });
+      
+      // 删除按钮（编辑模式下）
+      if (isEdit) {
+        modal.querySelector('#journal-delete-confirm-btn').addEventListener('click', async () => {
+          await this.deleteJournal(journalId);
+          document.body.removeChild(modal);
+          resolve(true);
+        });
+      }
+    });
+  }
+
+  /**
+   * 删除日记
+   */
+  async deleteJournal(journalId) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">确认删除</div>
+          </div>
+          <div class="modal-body">
+            <p style="text-align: center;">确定要删除这篇日记吗？</p>
+          </div>
+          <div class="modal-footer">
+            <div class="modal-btn" id="journal-delete-cancel-btn">取消</div>
+            <div class="modal-btn danger" id="journal-delete-ok-btn">删除</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      modal.querySelector('#journal-delete-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      modal.querySelector('#journal-delete-ok-btn').addEventListener('click', async () => {
+        await db.delete('journals', journalId);
+        document.body.removeChild(modal);
+        this.showToast('日记已删除');
+        
+        // 重新加载日记列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadJournalApp(appContent);
+        }
+        resolve(true);
+      });
+    });
+  }
+
+  /**
+   * 查看日记详情
+   */
+  async viewJournalDetail(journalId) {
+    const journal = await db.get('journals', journalId);
+    if (!journal) return;
+    
+    const container = document.getElementById('app-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+      <div class="journal-detail">
+        <div class="journal-detail-header">
+          <div class="journal-detail-date">
+            ${new Date(journal.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+          </div>
+          <span class="journal-detail-mood">${journal.mood || '😊'}</span>
+        </div>
+        <div class="journal-detail-content">${this.escapeHtml(journal.content || '')}</div>
+        <div class="journal-detail-footer">
+          ${journal.tags && journal.tags.length > 0 ? `
+            <div class="journal-detail-tags">
+              ${journal.tags.map(tag => `<span class="journal-tag">#${this.escapeHtml(tag)}</span>`).join('')}
+            </div>
+          ` : ''}
+          <span class="journal-detail-meta">
+            ${journal.content?.length || 0} 字 · 创建于 ${new Date(journal.created_at).toLocaleString('zh-CN')}
+          </span>
+        </div>
+        <div class="journal-detail-actions">
+          <button class="btn btn-secondary" id="journal-detail-edit-btn">编辑</button>
+          <button class="btn btn-primary" id="journal-detail-back-btn">返回</button>
+        </div>
+      </div>
+    `;
+    
+    // 绑定事件
+    container.querySelector('#journal-detail-back-btn').addEventListener('click', () => {
+      const appContent = document.getElementById('app-content');
+      if (appContent) {
+        this.loadJournalApp(appContent);
+      }
+    });
+    
+    container.querySelector('#journal-detail-edit-btn').addEventListener('click', () => {
+      this.showJournalModal(journalId);
+    });
+  }
+
+  /**
+   * 按搜索过滤日记
+   */
+  filterJournalsBySearch(query) {
+    const list = document.getElementById('journal-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.journal-item');
+    const lowerQuery = query.toLowerCase();
+    
+    items.forEach(item => {
+      const content = item.dataset.content || '';
+      const tags = item.querySelector('.journal-tags-preview')?.textContent.toLowerCase() || '';
+      
+      const match = content.toLowerCase().includes(lowerQuery) || tags.includes(lowerQuery);
+      item.style.display = match ? '' : 'none';
+    });
+  }
+
+  /**
+   * 按情绪过滤日记
+   */
+  filterJournalsByMood(mood) {
+    const list = document.getElementById('journal-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.journal-item');
+    
+    items.forEach(item => {
+      if (mood === 'all') {
+        item.style.display = '';
+      } else {
+        const itemMood = item.dataset.mood || '';
+        item.style.display = itemMood === mood ? '' : 'none';
+      }
+    });
   }
 
   /**
@@ -881,29 +1606,77 @@ class App {
   async loadForumApp(container) {
     const forums = await db.getAll('forums');
     
+    // 获取所有唯一标签
+    const allTags = new Set();
+    forums.forEach(f => {
+      if (f.tags && Array.isArray(f.tags)) {
+        f.tags.forEach(tag => allTags.add(tag));
+      }
+    });
+    
     let html = `
       <div class="forum-app">
-        <div class="forum-list">
+        <div class="forum-header-bar">
+          <div class="forum-search-box">
+            <svg class="forum-search-icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="forum-search-input" class="forum-search-input" placeholder="搜索帖子...">
+          </div>
+          <button class="forum-add-btn" id="forum-add-btn">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="forum-filter-tags" id="forum-filter-tags">
+          <span class="forum-filter-tag active" data-tag="all">全部</span>
+          <span class="forum-filter-tag" data-tag="hot">🔥 热门</span>
+          ${Array.from(allTags).map(tag => `<span class="forum-filter-tag" data-tag="${this.escapeHtml(tag)}">${this.escapeHtml(tag)}</span>`).join('')}
+        </div>
+        
+        <div class="forum-list" id="forum-list">
     `;
     
     if (forums.length === 0) {
       html += `
         <div class="empty-state">
           <div class="empty-state-title">暂无帖子</div>
-          <div class="empty-state-desc">发布第一个帖子吧</div>
+          <div class="empty-state-desc">点击右上角 + 发布第一个帖子</div>
         </div>
       `;
     } else {
       forums.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       
       forums.forEach(post => {
+        const tagsHtml = post.tags ? post.tags.map(tag => `<span class="forum-tag-item">${this.escapeHtml(tag)}</span>`).join('') : '';
+        
         html += `
-          <div class="forum-item card">
-            <div class="forum-title">${this.escapeHtml(post.title || '无标题')}</div>
-            <div class="forum-preview">${this.escapeHtml(post.content?.substring(0, 50) || '')}${post.content?.length > 50 ? '...' : ''}</div>
+          <div class="forum-item card" data-forum-id="${post.id}" data-tags="${post.tags ? post.tags.join(',') : ''}" data-likes="${post.likes || 0}">
+            <div class="forum-item-header">
+              <div class="forum-item-title">${this.escapeHtml(post.title || '无标题')}</div>
+              <div class="forum-item-actions">
+                <button class="forum-action-btn forum-edit-btn" data-id="${post.id}">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                </button>
+                <button class="forum-action-btn forum-delete-btn" data-id="${post.id}">
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="forum-tags">${tagsHtml}</div>
+            <div class="forum-preview">${this.escapeHtml(post.content?.substring(0, 80) || '')}${post.content?.length > 80 ? '...' : ''}</div>
             <div class="forum-footer">
-              <span class="forum-author">${this.escapeHtml(post.author || '匿名')}</span>
-              <span class="forum-stats">👍 ${post.likes || 0} 💬 ${post.comments || 0}</span>
+              <span class="forum-author">👤 ${this.escapeHtml(post.author || '匿名')}</span>
+              <span class="forum-stats">
+                <span class="forum-like-btn" data-id="${post.id}">👍 ${post.likes || 0}</span>
+                <span>💬 ${post.comments || 0}</span>
+              </span>
             </div>
           </div>
         `;
@@ -916,6 +1689,340 @@ class App {
     `;
     
     container.innerHTML = html;
+    
+    // 绑定事件
+    this.bindForumEvents(container);
+  }
+
+  /**
+   * 绑定论坛 App 事件
+   */
+  bindForumEvents(container) {
+    // 添加按钮
+    const addBtn = container.querySelector('#forum-add-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        this.showForumModal();
+      });
+    }
+    
+    // 搜索输入
+    const searchInput = container.querySelector('#forum-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.filterForumsBySearch(e.target.value);
+      });
+    }
+    
+    // 标签筛选
+    const filterTags = container.querySelectorAll('.forum-filter-tag');
+    filterTags.forEach(tag => {
+      tag.addEventListener('click', (e) => {
+        container.querySelectorAll('.forum-filter-tag').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        this.filterForumsByTag(e.target.dataset.tag);
+      });
+    });
+    
+    // 编辑按钮
+    const editBtns = container.querySelectorAll('.forum-edit-btn');
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const forumId = e.currentTarget.dataset.id;
+        this.showForumModal(forumId);
+      });
+    });
+    
+    // 删除按钮
+    const deleteBtns = container.querySelectorAll('.forum-delete-btn');
+    deleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const forumId = e.currentTarget.dataset.id;
+        this.deleteForum(forumId);
+      });
+    });
+    
+    // 点赞按钮
+    const likeBtns = container.querySelectorAll('.forum-like-btn');
+    likeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const forumId = e.currentTarget.dataset.id;
+        this.likeForum(forumId);
+      });
+    });
+    
+    // 点击帖子项查看详情
+    const forumItems = container.querySelectorAll('.forum-item');
+    forumItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.forum-action-btn') && !e.target.closest('.forum-like-btn')) {
+          const forumId = item.dataset.forumId;
+          this.viewForumDetail(forumId);
+        }
+      });
+    });
+  }
+
+  /**
+   * 显示论坛编辑/新增模态框
+   */
+  async showForumModal(forumId = null) {
+    const isEdit = !!forumId;
+    let forum = null;
+    
+    if (isEdit) {
+      forum = await db.get('forums', forumId);
+    }
+    
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay forum-modal-overlay';
+      modal.innerHTML = `
+        <div class="modal forum-modal">
+          <div class="modal-header">
+            <div class="modal-title">${isEdit ? '编辑帖子' : '发布帖子'}</div>
+          </div>
+          <div class="modal-body">
+            <div class="forum-form-group">
+              <label class="forum-form-label">标题</label>
+              <input type="text" id="forum-title-input" class="input" value="${this.escapeHtml(forum?.title || '')}" placeholder="输入帖子标题" maxlength="50">
+            </div>
+            <div class="forum-form-group">
+              <label class="forum-form-label">作者</label>
+              <input type="text" id="forum-author-input" class="input" value="${this.escapeHtml(forum?.author || '我')}" placeholder="输入作者名" maxlength="20">
+            </div>
+            <div class="forum-form-group">
+              <label class="forum-form-label">标签（用逗号分隔）</label>
+              <input type="text" id="forum-tags-input" class="input" value="${forum?.tags ? forum.tags.join(', ') : ''}" placeholder="例如：讨论，分享，求助">
+            </div>
+            <div class="forum-form-group">
+              <label class="forum-form-label">内容</label>
+              <textarea id="forum-content-input" class="input forum-content-input" rows="6" placeholder="输入帖子内容...">${this.escapeHtml(forum?.content || '')}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            ${isEdit ? `
+              <div class="modal-btn danger" id="forum-delete-confirm-btn">删除</div>
+            ` : ''}
+            <div class="modal-btn" id="forum-cancel-btn">取消</div>
+            <div class="modal-btn" id="forum-save-btn">保存</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // 取消按钮
+      modal.querySelector('#forum-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      // 保存按钮
+      modal.querySelector('#forum-save-btn').addEventListener('click', async () => {
+        const title = modal.querySelector('#forum-title-input').value.trim();
+        const author = modal.querySelector('#forum-author-input').value.trim();
+        const tagsInput = modal.querySelector('#forum-tags-input').value.trim();
+        const content = modal.querySelector('#forum-content-input').value.trim();
+        const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        if (!title) {
+          this.showToast('标题不能为空');
+          return;
+        }
+        
+        if (!content) {
+          this.showToast('内容不能为空');
+          return;
+        }
+        
+        const forumData = {
+          id: forum?.id || `forum_${Date.now()}`,
+          title,
+          author: author || '匿名',
+          content,
+          tags,
+          likes: forum?.likes || 0,
+          comments: forum?.comments || 0,
+          created_at: forum?.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_deleted: false
+        };
+        
+        await db.put('forums', forumData);
+        document.body.removeChild(modal);
+        this.showToast(isEdit ? '帖子已更新' : '帖子已发布');
+        
+        // 重新加载论坛列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadForumApp(appContent);
+        }
+        resolve(true);
+      });
+      
+      // 删除按钮（编辑模式下）
+      if (isEdit) {
+        modal.querySelector('#forum-delete-confirm-btn').addEventListener('click', async () => {
+          await this.deleteForum(forumId);
+          document.body.removeChild(modal);
+          resolve(true);
+        });
+      }
+    });
+  }
+
+  /**
+   * 删除论坛帖子
+   */
+  async deleteForum(forumId) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">确认删除</div>
+          </div>
+          <div class="modal-body">
+            <p style="text-align: center;">确定要删除这个帖子吗？</p>
+          </div>
+          <div class="modal-footer">
+            <div class="modal-btn" id="forum-delete-cancel-btn">取消</div>
+            <div class="modal-btn danger" id="forum-delete-ok-btn">删除</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      modal.querySelector('#forum-delete-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(false);
+      });
+      
+      modal.querySelector('#forum-delete-ok-btn').addEventListener('click', async () => {
+        await db.delete('forums', forumId);
+        document.body.removeChild(modal);
+        this.showToast('帖子已删除');
+        
+        // 重新加载论坛列表
+        const appContent = document.getElementById('app-content');
+        if (appContent) {
+          await this.loadForumApp(appContent);
+        }
+        resolve(true);
+      });
+    });
+  }
+
+  /**
+   * 点赞论坛帖子
+   */
+  async likeForum(forumId) {
+    const forum = await db.get('forums', forumId);
+    if (!forum) return;
+    
+    forum.likes = (forum.likes || 0) + 1;
+    forum.updated_at = new Date().toISOString();
+    await db.put('forums', forum);
+    
+    this.showToast('已点赞');
+    
+    // 重新加载论坛列表
+    const appContent = document.getElementById('app-content');
+    if (appContent) {
+      await this.loadForumApp(appContent);
+    }
+  }
+
+  /**
+   * 查看论坛帖子详情
+   */
+  async viewForumDetail(forumId) {
+    const forum = await db.get('forums', forumId);
+    if (!forum) return;
+    
+    const container = document.getElementById('app-content');
+    if (!container) return;
+    
+    const tagsHtml = forum.tags ? forum.tags.map(tag => `<span class="forum-tag">${this.escapeHtml(tag)}</span>`).join('') : '';
+    
+    container.innerHTML = `
+      <div class="forum-detail">
+        <div class="forum-detail-header">
+          <h2 class="forum-detail-title">${this.escapeHtml(forum.title || '无标题')}</h2>
+          <div class="forum-detail-meta">
+            <span class="forum-detail-author">👤 ${this.escapeHtml(forum.author || '匿名')}</span>
+            <span class="forum-detail-date">📅 ${new Date(forum.created_at).toLocaleString('zh-CN')}</span>
+          </div>
+        </div>
+        ${tagsHtml ? `<div class="forum-detail-tags">${tagsHtml}</div>` : ''}
+        <div class="forum-detail-content">${this.escapeHtml(forum.content || '')}</div>
+        <div class="forum-detail-footer">
+          <span class="forum-detail-stats">👍 ${forum.likes || 0} · 💬 ${forum.comments || 0}</span>
+        </div>
+        <div class="forum-detail-actions">
+          <button class="btn btn-secondary" id="forum-detail-edit-btn">编辑</button>
+          <button class="btn btn-primary" id="forum-detail-back-btn">返回</button>
+        </div>
+      </div>
+    `;
+    
+    // 绑定事件
+    container.querySelector('#forum-detail-back-btn').addEventListener('click', () => {
+      const appContent = document.getElementById('app-content');
+      if (appContent) {
+        this.loadForumApp(appContent);
+      }
+    });
+    
+    container.querySelector('#forum-detail-edit-btn').addEventListener('click', () => {
+      this.showForumModal(forumId);
+    });
+  }
+
+  /**
+   * 按搜索过滤论坛
+   */
+  filterForumsBySearch(query) {
+    const list = document.getElementById('forum-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.forum-item');
+    const lowerQuery = query.toLowerCase();
+    
+    items.forEach(item => {
+      const title = item.querySelector('.forum-item-title')?.textContent.toLowerCase() || '';
+      const preview = item.querySelector('.forum-preview')?.textContent.toLowerCase() || '';
+      const author = item.querySelector('.forum-author')?.textContent.toLowerCase() || '';
+      
+      const match = title.includes(lowerQuery) || preview.includes(lowerQuery) || author.includes(lowerQuery);
+      item.style.display = match ? '' : 'none';
+    });
+  }
+
+  /**
+   * 按标签过滤论坛
+   */
+  filterForumsByTag(tag) {
+    const list = document.getElementById('forum-list');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.forum-item');
+    
+    items.forEach(item => {
+      if (tag === 'all') {
+        item.style.display = '';
+      } else if (tag === 'hot') {
+        // 热门：点赞数大于等于 5
+        const likes = parseInt(item.dataset.likes) || 0;
+        item.style.display = likes >= 5 ? '' : 'none';
+      } else {
+        const itemTags = item.dataset.tags || '';
+        const match = itemTags.split(',').includes(tag);
+        item.style.display = match ? '' : 'none';
+      }
+    });
   }
 
   /**
