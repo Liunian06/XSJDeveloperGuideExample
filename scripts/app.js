@@ -376,8 +376,26 @@ class App {
       case 'contacts':
         await this.loadContactsApp(contentEl);
         break;
+      case 'memory':
+        await this.loadMemoryApp(contentEl);
+        break;
+      case 'journal':
+        await this.loadJournalApp(contentEl);
+        break;
+      case 'forum':
+        await this.loadForumApp(contentEl);
+        break;
+      case 'worldbook':
+        await this.loadWorldBookApp(contentEl);
+        break;
+      case 'preset':
+        await this.loadPresetApp(contentEl);
+        break;
       case 'settings':
         await this.loadSettingsApp(contentEl);
+        break;
+      case 'stickers':
+        await this.loadStickersApp(contentEl);
         break;
       default:
         contentEl.innerHTML = `
@@ -763,6 +781,255 @@ class App {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  /**
+   * 加载记忆应用
+   */
+  async loadMemoryApp(container) {
+    const memories = await db.getAll('memories');
+    
+    let html = `
+      <div class="memory-app">
+        <div class="memory-list">
+    `;
+    
+    if (memories.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无记忆</div>
+          <div class="empty-state-desc">点击右上角 + 添加记忆</div>
+        </div>
+      `;
+    } else {
+      memories.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      memories.forEach(memory => {
+        const priorityStars = '★'.repeat(memory.priority || 1) + '☆'.repeat(5 - (memory.priority || 1));
+        html += `
+          <div class="memory-item card">
+            <div class="memory-header">
+              <span class="memory-title">${this.escapeHtml(memory.title || '无标题')}</span>
+              <span class="memory-priority">${priorityStars}</span>
+            </div>
+            <div class="memory-content">${this.escapeHtml(memory.content || '')}</div>
+            <div class="memory-footer">
+              ${memory.tags ? memory.tags.map(tag => `<span class="memory-tag">${this.escapeHtml(tag)}</span>`).join('') : ''}
+              <span class="memory-date">${new Date(memory.created_at).toLocaleDateString('zh-CN')}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+  }
+
+  /**
+   * 加载日记应用
+   */
+  async loadJournalApp(container) {
+    const journals = await db.getAll('journals');
+    
+    let html = `
+      <div class="journal-app">
+        <div class="journal-list">
+    `;
+    
+    if (journals.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无日记</div>
+          <div class="empty-state-desc">开始记录你的生活吧</div>
+        </div>
+      `;
+    } else {
+      journals.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      journals.forEach(journal => {
+        html += `
+          <div class="journal-item card">
+            <div class="journal-header">
+              <span class="journal-date">${new Date(journal.date).toLocaleDateString('zh-CN')}</span>
+              <span class="journal-mood">${journal.mood || '😊'}</span>
+            </div>
+            <div class="journal-preview">${this.escapeHtml(journal.content?.substring(0, 100) || '')}${journal.content?.length > 100 ? '...' : ''}</div>
+            <div class="journal-footer">
+              <span class="journal-words">${journal.content?.length || 0} 字</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+  }
+
+  /**
+   * 加载论坛应用
+   */
+  async loadForumApp(container) {
+    const forums = await db.getAll('forums');
+    
+    let html = `
+      <div class="forum-app">
+        <div class="forum-list">
+    `;
+    
+    if (forums.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无帖子</div>
+          <div class="empty-state-desc">发布第一个帖子吧</div>
+        </div>
+      `;
+    } else {
+      forums.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      forums.forEach(post => {
+        html += `
+          <div class="forum-item card">
+            <div class="forum-title">${this.escapeHtml(post.title || '无标题')}</div>
+            <div class="forum-preview">${this.escapeHtml(post.content?.substring(0, 50) || '')}${post.content?.length > 50 ? '...' : ''}</div>
+            <div class="forum-footer">
+              <span class="forum-author">${this.escapeHtml(post.author || '匿名')}</span>
+              <span class="forum-stats">👍 ${post.likes || 0} 💬 ${post.comments || 0}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+  }
+
+  /**
+   * 加载世界书应用
+   */
+  async loadWorldBookApp(container) {
+    const worldbook = await db.getAll('worldbook');
+    
+    let html = `
+      <div class="worldbook-app">
+        <div class="worldbook-list">
+    `;
+    
+    if (worldbook.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无世界书条目</div>
+          <div class="empty-state-desc">创建你的世界观吧</div>
+        </div>
+      `;
+    } else {
+      worldbook.forEach(item => {
+        const typeIcon = item.type === 'character' ? '👤' : item.type === 'location' ? '📍' : '📖';
+        html += `
+          <div class="worldbook-item card">
+            <div class="worldbook-header">
+              <span class="worldbook-type">${typeIcon}</span>
+              <span class="worldbook-title">${this.escapeHtml(item.name || '无标题')}</span>
+            </div>
+            <div class="worldbook-preview">${this.escapeHtml(item.description?.substring(0, 80) || '')}${item.description?.length > 80 ? '...' : ''}</div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+  }
+
+  /**
+   * 加载预设应用
+   */
+  async loadPresetApp(container) {
+    const presets = await db.getAll('presets');
+    
+    let html = `
+      <div class="preset-app">
+        <div class="preset-list">
+    `;
+    
+    if (presets.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无预设</div>
+          <div class="empty-state-desc">创建你的第一个预设吧</div>
+        </div>
+      `;
+    } else {
+      presets.forEach(preset => {
+        html += `
+          <div class="preset-item card">
+            <div class="preset-title">${this.escapeHtml(preset.name || '无标题')}</div>
+            <div class="preset-preview">${this.escapeHtml(preset.content?.substring(0, 60) || '')}${preset.content?.length > 60 ? '...' : ''}</div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+  }
+
+  /**
+   * 加载表情包应用
+   */
+  async loadStickersApp(container) {
+    const stickers = await db.getAll('stickers');
+    
+    let html = `
+      <div class="stickers-app">
+        <div class="stickers-grid">
+    `;
+    
+    if (stickers.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-title">暂无表情包</div>
+          <div class="empty-state-desc">添加你的第一个表情包吧</div>
+        </div>
+      `;
+    } else {
+      stickers.forEach(sticker => {
+        html += `
+          <div class="sticker-item">
+            <div class="sticker-preview">${sticker.emoji || '😊'}</div>
+          </div>
+        `;
+      });
+    }
+    
+    html += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
   }
 
   /**

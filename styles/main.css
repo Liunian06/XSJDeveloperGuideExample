@@ -724,6 +724,272 @@ body {
   height: 20px;
 }
 
+/* ========== 记忆应用样式 ========== */
+.memory-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.memory-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.memory-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.memory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.memory-title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.memory-priority {
+  color: #FFB800;
+  font-size: var(--font-sm);
+}
+
+.memory-content {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.memory-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.memory-tag {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  border-radius: var(--radius-full);
+  margin-right: var(--spacing-xs);
+}
+
+.memory-date {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* ========== 日记应用样式 ========== */
+.journal-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.journal-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.journal-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.journal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.journal-date {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.journal-mood {
+  font-size: var(--font-lg);
+}
+
+.journal-preview {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.journal-footer {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* ========== 论坛应用样式 ========== */
+.forum-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.forum-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.forum-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.forum-title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.forum-preview {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.forum-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forum-author {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.forum-stats {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* ========== 世界书应用样式 ========== */
+.worldbook-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.worldbook-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.worldbook-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.worldbook-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.worldbook-type {
+  font-size: var(--font-lg);
+}
+
+.worldbook-title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.worldbook-preview {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ========== 预设应用样式 ========== */
+.preset-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.preset-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.preset-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.preset-title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.preset-preview {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ========== 表情包应用样式 ========== */
+.stickers-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stickers-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+}
+
+.sticker-item {
+  aspect-ratio: 1;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.sticker-item:active {
+  transform: scale(0.9);
+}
+
+.sticker-preview {
+  font-size: 36px;
+}
+
 /* ========== 联系人应用样式 ========== */
 .contacts-app {
   height: 100%;
